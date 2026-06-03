@@ -21,7 +21,7 @@ public class PlayerHealth : MonoBehaviour
 
     void Start()
     {
-        currentHP = maxHP;
+        currentHP = GameData.PlayerHP;
         UpdateHPUI();
     }
     
@@ -29,6 +29,9 @@ public class PlayerHealth : MonoBehaviour
     {
         currentHP -= damageAmount;
         currentHP = Mathf.Clamp(currentHP, 0, maxHP); 
+        
+        GameData.PlayerHP = currentHP;
+        
         UpdateHPUI();
 
         if (getHitEffectPrefab != null && hitPointTransform != null)

@@ -3,7 +3,7 @@
 public class BossController : MonoBehaviour
 {
     public Animator bossAnimator;
-    public float damagePerMiss = 10f; // Sát thương mỗi lần gõ sai/hụt
+    public float damagePerMiss = 1f; // Sát thương mỗi lần gõ sai/hụt
 
     void Start()
     {
