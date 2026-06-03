@@ -28,14 +28,14 @@ public class Door : MonoBehaviour
             transform.Rotate(0, 90, 0);
             opened = true;
 
-            pressEText.text = "Nhấn E để đóng cửa";
+            pressEText.text = "Press E to close";
         }
         else
         {
             transform.Rotate(0, -90, 0);
             opened = false;
 
-            pressEText.text = "Nhấn E để mở cửa";
+            pressEText.text = "Press E to open";
         }
     }
 
@@ -47,11 +47,11 @@ public class Door : MonoBehaviour
 
             if (opened)
             {
-                pressEText.text = "Nhấn E để đóng cửa";
+                pressEText.text = "Press E to close";
             }
             else
             {
-                pressEText.text = "Nhấn E để mở cửa";
+                pressEText.text = "Press E to open";
             }
 
             pressEText.gameObject.SetActive(true);

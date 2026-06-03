@@ -40,7 +40,7 @@ public class NewGameplayManager : MonoBehaviour
 
     private List<GameObject> activeNotes = new List<GameObject>();
     private KeyCode[] keys = { KeyCode.LeftArrow, KeyCode.DownArrow, KeyCode.UpArrow, KeyCode.RightArrow };
-    private string[] arrowChars = { "←", "↓", "↑", "→" };
+    private string[] arrowChars = { "O", "O", "O", "O" };
     
     [Header("Cấu hình File Map Nhạc")]
     public string mapFileName = "Sweden";
@@ -52,6 +52,8 @@ public class NewGameplayManager : MonoBehaviour
 
     void Start()
     {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         // Khởi tạo UI ban đầu
         currentHitCount = 0;
         UpdateHitCounterUI();
@@ -110,7 +112,8 @@ public class NewGameplayManager : MonoBehaviour
     {
         isLevelCompleted = true;
         Debug.LogWarning($"🎉 XUẤT SẮC! Đã bấm đúng {targetHitCount} nốt. Đang hiển thị bảng văn phòng...");
-
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         // 1. Hiện cái Panel thông báo lên màn hình (Canvas Overlay nằm trên cùng)
         if (nextScenePanel != null)
         {
