@@ -1,19 +1,10 @@
 fileFormatVersion: 2
-guid: 2571f2c1f607dcf48a2727a49e5693ee
+guid: fbcd4d25822e5db45a477b9c51cd9ec2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1152356169552002576
-    second: computer_0
-  - first:
-      213: -8796642946680004667
-    second: computer_1
-  - first:
-      213: -6682465662091931926
-    second: computer_2
-  - first:
-      213: -7319677003180022380
-    second: computer_3
+      213: 6963788061052188870
+    second: Unhover_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -122,23 +113,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: computer_1
+      name: Unhover_0
       rect:
         serializedVersion: 2
-        x: 1373
-        y: 0
-        width: 889
-        height: 827
+        x: 140
+        y: 25
+        width: 236
+        height: 238
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5cf513bb8db0ce580800000000000000
-      internalID: -8796642946680004667
+      spriteID: 6c83f16885854a060800000000000000
+      internalID: 6963788061052188870
       vertices: []
       indices: 
       edges: []
@@ -147,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9ce91a826108f8e478258fa94bb8b952
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -157,10 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      computer_0: 1152356169552002576
-      computer_1: -8796642946680004667
-      computer_2: -6682465662091931926
-      computer_3: -7319677003180022380
+      Unhover_0: 6963788061052188870
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
