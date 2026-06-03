@@ -6,18 +6,18 @@ public class GameplayManager : MonoBehaviour
     public static GameplayManager instance;
 
     [Header("Audition Settings")]
-    public int minKeys = 3;            // Số phím tối thiểu trong 1 chuỗi
-    public int maxKeys = 6;            // Số phím tối đa trong 1 chuỗi
-    public float spaceHitWindow = 0.15f; // Cửa sổ bao dung để bấm Space (0.15 giây)
+    public int minKeys = 3;            
+    public int maxKeys = 6;           
+    public float spaceHitWindow = 0.15f; 
 
     [Header("Current Round State")]
-    public List<KeyCode> currentSequence = new List<KeyCode>(); // Chuỗi phím hiện tại
-    public int currentKeyIndex = 0;    // Người chơi đang gõ đến phím thứ mấy
+    public List<KeyCode> currentSequence = new List<KeyCode>(); 
+    public int currentKeyIndex = 0;   
     
-    private bool isSequenceCompleted = false; // Đã gõ xong dãy mũi tên chưa (chưa tính Space)
-    private bool hasHitSpacePerfect = false;  // Kết quả cuối cùng để trả lời cho Boss
-    private bool isRoundFailedEarly = false;  // Bị tính là thua sớm do gõ sai giữa chừng
-    private float targetSpaceTime = 0f;       // Mốc thời gian thực mà nhịp 4 sẽ diễn ra
+    private bool isSequenceCompleted = false; 
+    private bool hasHitSpacePerfect = false;  
+    private bool isRoundFailedEarly = false;  
+    private float targetSpaceTime = 0f;      
 
     // Danh sách các phím mũi tên để game bốc ngẫu nhiên
     private KeyCode[] arrowKeys = { KeyCode.UpArrow, KeyCode.DownArrow, KeyCode.LeftArrow, KeyCode.RightArrow };
