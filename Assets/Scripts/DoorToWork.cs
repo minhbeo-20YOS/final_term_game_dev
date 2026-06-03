@@ -32,7 +32,9 @@ public class DoorToDay1 : MonoBehaviour
 
             if (pressEText != null)
             {
+
                 pressEText.text = "Nhấn E để đi làm";
+
                 pressEText.gameObject.SetActive(true);
             }
         }
