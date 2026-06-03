@@ -5046,10 +5046,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Press E to open '
   m_isRightToLeft: 0
-
   m_fontAsset: {fileID: 11400000, guid: 4061fff899aa80a4aa5471aae3228dd0, type: 2}
   m_sharedMaterial: {fileID: 2249308478699632481, guid: 4061fff899aa80a4aa5471aae3228dd0, type: 2}
-
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
