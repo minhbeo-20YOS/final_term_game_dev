@@ -2,19 +2,18 @@
 
 public class BossController : MonoBehaviour
 {
-    public Animator bossAnimator;
-    public float damagePerMiss = 1f; // Sát thương mỗi lần gõ sai/hụt
+    // Bỏ biến toàn cục bossAnimator cũ đi, mình sẽ tìm trực tiếp khi tung chiêu
+
+    [Header("--- Damage Settings ---")]
+    public float baseDamagePerMiss = 5f; // Sát thương gốc ở Day 1
 
     void Start()
     {
-        bossAnimator = GetComponentInChildren<Animator>();
-        if (bossAnimator == null) 
-            bossAnimator = GetComponent<Animator>();
+        // XÓA SẠCH CODE Ở ĐÂY: Không cache cứng ở Start nữa để tránh bị Unity đánh lừa
     }
 
     void OnEnable()
     {
-        // Lắng nghe nhịp từ Conductor
         Conductor.OnBeat += CheckPlayerRhythm;
     }
 
@@ -23,26 +22,38 @@ public class BossController : MonoBehaviour
         Conductor.OnBeat -= CheckPlayerRhythm;
     }
 
-    // Hàm này tự động chạy mỗi khi nhạc đập vào nhịp mới
     void CheckPlayerRhythm(int totalBeats, int beatInBar)
     {
-        // Ở cơ chế mới (Mũi tên bay), chúng ta xử lý trượt/trúng trực tiếp khi bấm phím
-        // nên hàm check nhịp 4 cũ ở đây được để trống hoàn toàn một cách sạch sẽ.
+        // Để trống sạch sẽ cho cơ chế mũi tên mới
+    }
+    
+    public float GetCurrentDayDamage()
+    {
+        return baseDamagePerMiss + (GameData.CurrentDay - 1) * 5f;
     }
 
-    // Hàm này sẽ được gọi trực tiếp từ NewGameplayManager khi người chơi lỡ nốt
+    // Hàm này được NewGameplayManager gọi trực tiếp khi người chơi lỡ nốt
     public void AttackAndInsult()
     {
-        Debug.Log("Boss tung chiêu: SỈ NHỤC / CHỬI BỚI!");
+        Debug.Log($"Boss ngày {GameData.CurrentDay} tung chiêu: SỈ NHỤC / CHỬI BỚI!");
         
-        if (bossAnimator != null)
+        // 🔥 ĐÒN QUYẾT ĐỊNH: Quét tìm đúng con Animator của đứa con đang BẬT (Active) lúc này
+        Animator activeAnimator = GetComponentInChildren<Animator>();
+        
+        if (activeAnimator != null)
         {
-            bossAnimator.SetTrigger("InsultAttack"); 
+            // Bắn hoạt ảnh chuẩn đét vào đứa của ngày hôm đó
+            activeAnimator.SetTrigger("InsultAttack"); 
+        }
+        else
+        {
+            Debug.LogError("❌ Lỗi ngang ngược: Không tìm thấy con Animator nào đang bật ở các Object con cả ông ơi!");
         }
         
         if (PlayerHealth.instance != null)
         {
-            PlayerHealth.instance.TakeDamage(damagePerMiss);
+            float finalDamage = GetCurrentDayDamage();
+            PlayerHealth.instance.TakeDamage(finalDamage);
         }
     }
 }

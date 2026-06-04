@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UI;          // Thêm để quản lý Text/Panel UI truyền thống
-using TMPro;                   // Thêm để quản lý TextMesh Pro xịn
-using UnityEngine.SceneManagement; // THÊM THƯ VIỆN NÀY ĐỂ CHUYỂN SCENE
+using UnityEngine.UI;          
+using TMPro;                   
+using UnityEngine.SceneManagement; 
 
 public class NewGameplayManager : MonoBehaviour
 {
@@ -21,22 +21,24 @@ public class NewGameplayManager : MonoBehaviour
     public RectTransform[] targetButtons; 
 
     [Header("Hệ Thống Đếm Nốt & Chuyển Cảnh")]
-    [Tooltip("Kéo thả Text hiển thị số lượt bấm trúng vào đây")]
     public TextMeshProUGUI hitCounterText; 
-    [Tooltip("Kéo thả Panel thông báo Next Scene vào đây (Mặc định ẩn đi)")]
     public GameObject nextScenePanel;     
-    [Tooltip("Tên của Scene tiếp theo muốn chuyển đến (Ví dụ: Day1 hoặc SampleScene)")]
+    
+    // 🔥 THÊM ĐÚNG Ô NÀY ĐỂ KÉO THẢ PANEL VICTORY
+    public GameObject victoryPanel;
+
     public string nextSceneName = "SampleScene";
-    public string winSceneName = "WinScene";
-    [Tooltip("Số lượt bấm đúng yêu cầu để qua màn")]
     public int targetHitCount = 30;
 
-    private int currentHitCount = 0; // Biến tích lũy số lần bấm đúng
-    private bool isLevelCompleted = false; // Tránh việc chuyển cảnh liên tục nhiều lần
+    private int currentHitCount = 0; 
+    private bool isLevelCompleted = false; 
 
     [Header("Timing")]
     public float hitWindow = 0.12f;     
-    public float spawnOffsetBeats = 3f; 
+    public float spawnOffsetBeats = 3f;
+    
+    [Header("--- Coworker Settings ---")]
+    public GameObject[] coworkerList;
 
     private List<GameObject> activeNotes = new List<GameObject>();
     private KeyCode[] keys = { KeyCode.LeftArrow, KeyCode.DownArrow, KeyCode.UpArrow, KeyCode.RightArrow };
@@ -52,12 +54,21 @@ public class NewGameplayManager : MonoBehaviour
 
     void Start()
     {
+        int coworkerIndex = GameData.CurrentDay - 1;
+        
+        for (int i = 0; i < coworkerList.Length; i++)
+        {
+            if (coworkerList[i] != null)
+            {
+                coworkerList[i].SetActive(i == coworkerIndex);
+            }
+        }
+        
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        // Khởi tạo UI ban đầu
         currentHitCount = 0;
         UpdateHitCounterUI();
-        if (nextScenePanel != null) nextScenePanel.SetActive(false); // Ẩn bảng chuyển cảnh đi khi đầu game
+        if (nextScenePanel != null) nextScenePanel.SetActive(false); 
 
         if (currentMode == GameMode.PlayCustomMap)
         {
@@ -98,7 +109,6 @@ public class NewGameplayManager : MonoBehaviour
         }
     }
 
-    // --- HÀM CẬP NHẬT CHỮ HIỂN THỊ SỐ LƯỢT BẤM ---
     void UpdateHitCounterUI()
     {
         if (hitCounterText != null)
@@ -107,26 +117,19 @@ public class NewGameplayManager : MonoBehaviour
         }
     }
 
-    // --- HÀM XỬ LÝ QUA MÀN KHI ĐỦ 30 LẦN BẤM ĐÚNG ---
     void CompleteLevel()
     {
         isLevelCompleted = true;
         Debug.LogWarning($"🎉 XUẤT SẮC! Đã bấm đúng {targetHitCount} nốt. Đang hiển thị bảng văn phòng...");
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
-        // 1. Hiện cái Panel thông báo lên màn hình (Canvas Overlay nằm trên cùng)
-        if (nextScenePanel != null)
-        {
-            nextScenePanel.SetActive(true);
-        }
+        if (nextScenePanel != null) nextScenePanel.SetActive(true);
 
-        // Tắt nhạc nền đi cho đỡ ồn ào khi chuyển sang màn hình tan ca
         if (Conductor.instance != null && Conductor.instance.GetComponent<AudioSource>() != null)
         {
             Conductor.instance.GetComponent<AudioSource>().Stop();
         }
 
-        // 🔥 XỬ LÝ TRIỆT ĐỂ: Dọn sạch tất cả nốt nhạc đang bay lơ lửng phía sau để màn hình gọn gàng
         ClearAllActiveNotes();
     }
 
@@ -134,35 +137,33 @@ public class NewGameplayManager : MonoBehaviour
     {
         for (int i = activeNotes.Count - 1; i >= 0; i--)
         {
-            if (activeNotes[i] != null)
-            {
-                Destroy(activeNotes[i]);
-            }
+            if (activeNotes[i] != null) Destroy(activeNotes[i]);
         }
         activeNotes.Clear();
     }
 
-    // 🔥 HÀM MỚI: GẮN VÀO SỰ KIỆN CLICK CỦA NÚT NEXT TRÊN PANEL VĂN PHÒNG
+    // 🔥 HÀM CLICK NÚT GOHOME ĐÃ ĐƯỢC ĐỔI THEO Ý ÔNG
     public void OnNextButtonClick()
     {
         Debug.LogWarning("🚀 Người chơi bấm nút Next! Đang xử lý chuyển ngày...");
 
-        // 1. TĂNG SỐ NGÀY LÊN 1 (Nhân vật ngủ dậy)
+        // 1. TĂNG SỐ NGÀY LÊN 1
         GameData.CurrentDay++;
         Debug.Log($"[Hệ thống]: Trời đã sáng! Hôm nay là Day: {GameData.CurrentDay}");
 
-        // 2. KIỂM TRA ĐIỀU KIỆN THẮNG (Sống sót qua 3 ngày. Sáng Day 4 = Thắng)
+        // 2. KIỂM TRA ĐIỀU KIỆN THẮNG (Nếu > 3 thì bật panel Victory lên thôi, không chuyển Scene)
         if (GameData.CurrentDay > 3)
         {
-            Debug.LogWarning("🏆 CHÚC MỪNG! Bạn đã sống sót qua 3 ngày địa ngục công sở. Bạn thắng!");
-            
-            // Tắt Panel Gameplay cũ
-            if (nextScenePanel != null) nextScenePanel.SetActive(false);
+            Debug.LogWarning("🏆 CHÚC MỪNG! Bạn đã thắng!");
 
-            // Chuyển đến màn hình thắng cuộc (Tạo Scene tên là 'WinScene' và add vào Build Settings nhé)
-            SceneManager.LoadScene(winSceneName); 
+            // Chỉ cần mở active Victory lên thôi đúng chuẩn ý ông luôn:
+            if (victoryPanel != null) 
+            {
+                victoryPanel.SetActive(true);
+                Time.timeScale = 0;
+            }
             
-            return; // Ngăn không cho code chạy xuống dòng LoadNextScene() mặc định bên dưới
+            return; // Chặn không cho chạy xuống hàm LoadNextScene ở dưới
         }
         
         LoadNextScene();
@@ -312,9 +313,37 @@ public class NewGameplayManager : MonoBehaviour
         {
             activeNotes.Remove(note);
             Destroy(note);
-
+            
             BossController boss = GameObject.FindFirstObjectByType<BossController>();
-            if (boss != null) boss.AttackAndInsult();
+            
+            if (boss != null)
+            {
+                boss.AttackAndInsult(); // Gọi thg cha tung chiêu
+            }
         }
+    }
+    
+    private void ResetGameProgress()
+    {
+        GameData.CurrentDay = 1;
+        GameData.PlayerHP = 100f; 
+        
+        Time.timeScale = 1f;
+
+        Debug.LogWarning("[Hệ thống] Đã reset toàn bộ dữ liệu tĩnh! Sẵn sàng cho lượt chơi mới.");
+    }
+    
+    public void OnPlayAgainButtonClick()
+    {
+        ResetGameProgress();
+        
+        SceneManager.LoadScene("SampleScene");
+    }
+    
+    public void OnReturnToMainMenuButtonClick()
+    {
+        ResetGameProgress();
+        
+        SceneManager.LoadScene("MainMenu");
     }
 }

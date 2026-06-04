@@ -13,6 +13,7 @@ public class PlayerHealth : MonoBehaviour
     public GameObject getHitEffectPrefab;
     [Tooltip("Kéo thả Object 'HitPoint' (con của Player) vào ô này")]
     public Transform hitPointTransform;
+    public GameObject gameOverPanel;
 
     void Awake()
     {
@@ -37,7 +38,6 @@ public class PlayerHealth : MonoBehaviour
         if (getHitEffectPrefab != null && hitPointTransform != null)
         {
             GameObject instantiatedEffect = Instantiate(getHitEffectPrefab, hitPointTransform.position, hitPointTransform.rotation);
-            
             Destroy(instantiatedEffect, 1.0f); 
         }
         else if (getHitEffectPrefab != null && hitPointTransform == null)
@@ -52,10 +52,20 @@ public class PlayerHealth : MonoBehaviour
             playerAnim.SetTrigger("TakeDamage"); 
         }
 
+        // 🔥 2. KIỂM TRA ĐIỀU KIỆN THUA CUỘC (Hết máu)
         if (currentHP <= 0)
         {
             Debug.Log("Game Over! Người chơi bị sa thải + Tự sad.");
-            // Xử lý chuyển Scene End Game thua cuộc tại đây
+            
+            if (gameOverPanel != null) gameOverPanel.SetActive(true);
+            
+            Time.timeScale = 0;
+            
+            // Giải phóng con trỏ chuột để người chơi tương tác bấm nút "Chơi lại" (Retry)
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            
+            // (Tùy chọn) Ông có thể làm chậm thời gian game lại nếu muốn: Time.timeScale = 0f;
         }
     }
 
