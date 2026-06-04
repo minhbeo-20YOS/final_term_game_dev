@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine.UI;          
 using TMPro;                   
 using UnityEngine.SceneManagement; 
+using UnityEngine.Video; // 🔥 BẮT BUỘC THÊM DÒNG NÀY ĐỂ XỬ LÝ VIDEO
 
 public class NewGameplayManager : MonoBehaviour
 {
     public static NewGameplayManager instance;
 
     public enum GameMode { PlayCustomMap, RecordMode, RandomMachine }
-    [Header("Chọn Chế Độ Chôi")]
+    [Header("Chọn Chế Độ Chơi")]
     public GameMode currentMode = GameMode.PlayCustomMap;
 
     [Header("Danh Sách Nốt (Bản Đồ Nhạc)")]
@@ -23,15 +24,22 @@ public class NewGameplayManager : MonoBehaviour
     [Header("Hệ Thống Đếm Nốt & Chuyển Cảnh")]
     public TextMeshProUGUI hitCounterText; 
     public GameObject nextScenePanel;     
-    
-    // 🔥 THÊM ĐÚNG Ô NÀY ĐỂ KÉO THẢ PANEL VICTORY
     public GameObject victoryPanel;
+    public GameObject gameOverPanel; // 🔥 THÊM Ô NÀY ĐỂ KÉO BẢNG THUA CUỘC
+
+    [Header("--- Hệ Thống Video Ending ---")]
+    public VideoPlayer endingVideoPlayer; // Kéo thả Component Video Player vào đây
+    public GameObject videoUIContainer;   // Cái Panel đen che màn hình chứa ô xem video
+    public VideoClip happyEndingClip;     // Kéo file video Happy Ending vào đây
+    public VideoClip badEndingClip;       // Kéo file video Bad Ending vào đây
 
     public string nextSceneName = "SampleScene";
     public int targetHitCount = 30;
 
     private int currentHitCount = 0; 
     private bool isLevelCompleted = false; 
+    private bool isPlayingHappy = false;
+    private bool isPlayingBad = false;
 
     [Header("Timing")]
     public float hitWindow = 0.12f;     
@@ -66,9 +74,16 @@ public class NewGameplayManager : MonoBehaviour
         
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        
         currentHitCount = 0;
         UpdateHitCounterUI();
         if (nextScenePanel != null) nextScenePanel.SetActive(false); 
+
+        // Đăng ký sự kiện: "Khi nào video chạy hết giây cuối cùng thì tự gọi hàm OnVideoFinished"
+        if (endingVideoPlayer != null)
+        {
+            endingVideoPlayer.loopPointReached += OnVideoFinished;
+        }
 
         if (currentMode == GameMode.PlayCustomMap)
         {
@@ -84,12 +99,31 @@ public class NewGameplayManager : MonoBehaviour
     void OnDestroy()
     {
         Conductor.OnBeat -= SpawnNoteOnBeat_Random;
+
+        // Hủy đăng ký khi Object bị xóa để tránh rác bộ nhớ đám mây
+        if (endingVideoPlayer != null)
+        {
+            endingVideoPlayer.loopPointReached -= OnVideoFinished;
+        }
     }
 
     void Update()
     {
         if (Conductor.instance == null || isLevelCompleted) return;
-
+        
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            currentHitCount += 10; // Tăng 10 điểm 
+            UpdateHitCounterUI();  // Cập nhật lại thanh chữ hiển thị "Progress: X/30" 
+        
+            Debug.LogWarning($"[CHEAT] Người chơi hack game! Đã cộng 10 điểm. Tiến trình: {currentHitCount} / {targetHitCount}");
+            
+            if (currentHitCount >= targetHitCount)
+            {
+                CompleteLevel();
+            }
+        }
+        
         if (currentMode == GameMode.RecordMode)
         {
             RecordYourOwnBeatmap();
@@ -142,7 +176,7 @@ public class NewGameplayManager : MonoBehaviour
         activeNotes.Clear();
     }
 
-    // 🔥 HÀM CLICK NÚT GOHOME ĐÃ ĐƯỢC ĐỔI THEO Ý ÔNG
+    // 🏆 LUỒNG CLICK NÚT GOHOME (KHI ĐÃ QUA MÀN CHƠI NHẠC)
     public void OnNextButtonClick()
     {
         Debug.LogWarning("🚀 Người chơi bấm nút Next! Đang xử lý chuyển ngày...");
@@ -151,22 +185,83 @@ public class NewGameplayManager : MonoBehaviour
         GameData.CurrentDay++;
         Debug.Log($"[Hệ thống]: Trời đã sáng! Hôm nay là Day: {GameData.CurrentDay}");
 
-        // 2. KIỂM TRA ĐIỀU KIỆN THẮNG (Nếu > 3 thì bật panel Victory lên thôi, không chuyển Scene)
+        // 2. KIỂM TRA ĐIỀU KIỆN THẮNG CHUNG CUỘC
         if (GameData.CurrentDay > 3)
         {
-            Debug.LogWarning("🏆 CHÚC MỪNG! Bạn đã thắng!");
+            Debug.LogWarning("🏆 CHIẾN THẮNG CHUNG CUỘC! Đang chạy video Happy Ending...");
+            if (nextScenePanel != null) nextScenePanel.SetActive(false); // Ẩn cái tờ giấy note văn phòng đi
 
-            // Chỉ cần mở active Victory lên thôi đúng chuẩn ý ông luôn:
-            if (victoryPanel != null) 
-            {
-                victoryPanel.SetActive(true);
-                Time.timeScale = 0;
-            }
-            
-            return; // Chặn không cho chạy xuống hàm LoadNextScene ở dưới
+            // CHẠY VIDEO HAPPY ENDING
+            PlayEnding(happyEndingClip, true);
+            return; 
         }
         
         LoadNextScene();
+    }
+
+    // 💀 LUỒNG THUA CUỘC (Gọi hàm này từ script tính máu/PlayerHP của ông khi máu <= 0)
+    public void TriggerGameOverBadEnding()
+    {
+        Debug.LogWarning("💀 NGƯỜI CHƠI HẾT MÁU! Đang chạy video Bad Ending...");
+        isLevelCompleted = true;
+        ClearAllActiveNotes();
+
+        if (nextScenePanel != null) nextScenePanel.SetActive(false);
+
+        if (Conductor.instance != null && Conductor.instance.GetComponent<AudioSource>() != null)
+        {
+            Conductor.instance.GetComponent<AudioSource>().Stop(); // Tắt nhạc nền game
+        }
+
+        // CHẠY VIDEO BAD ENDING
+        PlayEnding(badEndingClip, false);
+    }
+
+    // Hàm bổ trợ bật Panel đen và phát Video tương ứng
+    private void PlayEnding(VideoClip clip, bool isHappy)
+    {
+        if (endingVideoPlayer == null || clip == null)
+        {
+            // Bọc lót: Nếu quên chưa gán video ngoài Editor thì hiện thẳng Panel kết quả luôn
+            if (isHappy && victoryPanel != null) victoryPanel.SetActive(true);
+            if (!isHappy && gameOverPanel != null) gameOverPanel.SetActive(true);
+            return;
+        }
+
+        if (videoUIContainer != null) videoUIContainer.SetActive(true); // Bật khung đen chứa video lên
+        
+        isPlayingHappy = isHappy;
+        isPlayingBad = !isHappy;
+
+        endingVideoPlayer.clip = clip;
+        endingVideoPlayer.Play(); // Phát video clip
+    }
+
+    // 🔥 HÀM TỰ ĐỘNG CHẠY KHI VIDEO CHIẾU XONG GIÂY CUỐI CÙNG
+    void OnVideoFinished(VideoPlayer vp)
+    {
+        Debug.LogWarning("🎬 Video đã kết thúc! Đang hiển thị Panel lựa chọn...");
+        
+        if (videoUIContainer != null) videoUIContainer.SetActive(false); // Tắt màn hình video đen đi
+
+        if (isPlayingHappy)
+        {
+            isPlayingHappy = false;
+            if (victoryPanel != null) 
+            {
+                victoryPanel.SetActive(true); // Hiện bảng chữ chiến thắng rực rỡ
+                Time.timeScale = 0; // Đóng băng game
+            }
+        }
+        else if (isPlayingBad)
+        {
+            isPlayingBad = false;
+            if (gameOverPanel != null) 
+            {
+                gameOverPanel.SetActive(true); // Hiện bảng chữ Thua cuộc (Game Over)
+                Time.timeScale = 0; // Đóng băng game
+            }
+        }
     }
 
     void LoadNextScene()
@@ -318,7 +413,7 @@ public class NewGameplayManager : MonoBehaviour
             
             if (boss != null)
             {
-                boss.AttackAndInsult(); // Gọi thg cha tung chiêu
+                boss.AttackAndInsult(); 
             }
         }
     }
@@ -336,14 +431,12 @@ public class NewGameplayManager : MonoBehaviour
     public void OnPlayAgainButtonClick()
     {
         ResetGameProgress();
-        
         SceneManager.LoadScene("SampleScene");
     }
     
     public void OnReturnToMainMenuButtonClick()
     {
         ResetGameProgress();
-        
         SceneManager.LoadScene("MainMenu");
     }
 }

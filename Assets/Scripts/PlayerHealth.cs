@@ -13,7 +13,6 @@ public class PlayerHealth : MonoBehaviour
     public GameObject getHitEffectPrefab;
     [Tooltip("Kéo thả Object 'HitPoint' (con của Player) vào ô này")]
     public Transform hitPointTransform;
-    public GameObject gameOverPanel;
 
     void Awake()
     {
@@ -52,20 +51,18 @@ public class PlayerHealth : MonoBehaviour
             playerAnim.SetTrigger("TakeDamage"); 
         }
 
-        // 🔥 2. KIỂM TRA ĐIỀU KIỆN THUA CUỘC (Hết máu)
+        // 🔥 KIỂM TRA ĐIỀU KIỆN THUA CUỘC (Hết máu)
         if (currentHP <= 0)
         {
-            Debug.Log("Game Over! Người chơi bị sa thải + Tự sad.");
+            Debug.LogWarning("💀 Game Over! Người chơi hết máu. Đang gọi video Bad Ending...");
             
-            if (gameOverPanel != null) gameOverPanel.SetActive(true);
+            // 1. Gọi bộ quản lý bật video và xử lý hậu trường
+            NewGameplayManager.instance.TriggerGameOverBadEnding();
             
-            Time.timeScale = 0;
-            
-            // Giải phóng con trỏ chuột để người chơi tương tác bấm nút "Chơi lại" (Retry)
+            // 2. Giải phóng con trỏ chuột luôn để lát hết video là có chuột bấm nút liền
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
             
-            // (Tùy chọn) Ông có thể làm chậm thời gian game lại nếu muốn: Time.timeScale = 0f;
         }
     }
 
