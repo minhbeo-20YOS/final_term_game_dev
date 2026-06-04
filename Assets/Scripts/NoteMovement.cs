@@ -3,7 +3,6 @@ using TMPro;
 
 public class NoteMovement : MonoBehaviour
 {
-    // Để public để bạn có thể nhìn thấy nó thay đổi số trong bảng Inspector khi bấm Play
     public float beatTime;      
     public KeyCode requiredKey; 
     public float targetY = 0f;  
@@ -20,7 +19,6 @@ public class NoteMovement : MonoBehaviour
         beatTime = hitTime;
         requiredKey = key;
         
-        // Cố gắng lấy Text nếu bạn quên chưa kéo dây ở Inspector
         if (noteText == null) noteText = GetComponentInChildren<TextMeshProUGUI>();
         
         if (noteText != null)
@@ -55,7 +53,7 @@ public class NoteMovement : MonoBehaviour
             }
             else
             {
-                // Bọc lót nếu không tìm thấy Manager thì tự hủy để không bị rác màn hình
+                // Bọc lót
                 Destroy(gameObject);
             }
         }
