@@ -19,8 +19,9 @@ public class NewGameplayManager : MonoBehaviour
 
     [Header("Prefabs & UI")]
     public GameObject notePrefab;       
-    public RectTransform[] targetButtons; 
+    public RectTransform[] targetButtons;
 
+    public TextMeshProUGUI dayText;
     [Header("Hệ Thống Đếm Nốt & Chuyển Cảnh")]
     public TextMeshProUGUI hitCounterText; 
     public GameObject nextScenePanel;     
@@ -63,6 +64,11 @@ public class NewGameplayManager : MonoBehaviour
     void Start()
     {
         int coworkerIndex = GameData.CurrentDay - 1;
+
+        if (dayText != null)
+        {
+            dayText.text = "Day:  " + GameData.CurrentDay;
+        }
         
         for (int i = 0; i < coworkerList.Length; i++)
         {
