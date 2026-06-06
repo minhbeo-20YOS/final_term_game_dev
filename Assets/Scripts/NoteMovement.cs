@@ -10,6 +10,7 @@ public class NoteMovement : MonoBehaviour
 
     [Header("Kéo ô Text của Prefab vào đây")]
     public TextMeshProUGUI noteText; 
+    
 
     private RectTransform rectTransform;
     private bool isInitialized = false;
